@@ -1,0 +1,18 @@
+{
+  "name": "tgitinerary",
+  "version": "1.0.0",
+  "description": "Travel Itinerary for Thanks Giving Trip 2024",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.1",
+    "uuid": "^11.0.2"
+  },
+  "devDependencies": {}
+}

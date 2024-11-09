@@ -1,0 +1,195 @@
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+/* General styling */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: #E6D1C3; /* Light Peach */
+    color: #3D2A24; /* Dark Brown for text */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Container styling */
+.container {
+    max-width: 700px;
+    width: 100%;
+    background-color: #D7B89E; /* Warm Beige */
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* Header styling */
+h1 {
+    color: #B85C38; /* Burnt Orange */
+    font-size: 2em;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.subheading {
+    color: #6B4F4D; /* Slightly darker brown for subheading */
+    font-size: 1em;
+    margin-bottom: 20px;
+}
+
+/* Day Section */
+.day summary {
+    font-size: 1.1em;
+    color: #3D2A24; /* Dark Brown for readability */
+    background-color: #936c55; /* Slightly darker beige for contrast */
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.day summary:hover {
+    background-color: #B85C38; /* Burnt Orange */
+    color: #FFF; /* White text on hover for contrast */
+}
+
+.tasks-container {
+    padding: 10px 20px;
+}
+
+/* Task Item Styling */
+.task-item {
+    background-color: #be997b; /* Warm Beige */
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.task-item label {
+    color: #3D2A24; /* Dark Brown for readability */
+    font-size: 1em;
+    font-weight: 400;
+    margin-left: 8px;
+}
+
+/* Checkbox */
+.task-item input[type="checkbox"] {
+    accent-color: #B85C38; /* Burnt Orange */
+    width: 18px;
+    height: 18px;
+    margin-right: 10px;
+}
+
+/* Delete Button */
+.delete-btn {
+    background-color: #CE2930; /* Red/Burnt Red */
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+.delete-btn:hover {
+    background-color: #B85C38; /* Burnt Orange on hover */
+}
+
+/* New Task Section */
+.new-task-section {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-top: 1px solid #C9A68D; /* Border to separate section */
+    margin-top: 10px;
+}
+
+.new-task-section input[type="text"] {
+    flex: 1;
+    padding: 10px;
+    background-color: #E6D1C3; /* Light Peach for input background */
+    border: 1px solid #C9A68D; /* Border color */
+    border-radius: 6px;
+    color: #3D2A24; /* Dark Brown for text */
+}
+
+.new-task-section input[type="text"]::placeholder {
+    color: #6B4F4D; /* Muted brown for placeholder */
+}
+
+.new-task-section button {
+    background-color: #B85C38; /* Burnt Orange */
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.new-task-section button:hover {
+    background-color: #CE2930; /* Red/Burnt Red */
+}
+
+/* Comments Section */
+.comments-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+    width: 100%;
+}
+
+.comments-section textarea {
+    width: 100%;
+    padding: 10px;
+    background-color: #E6D1C3; /* Light Peach */
+    color: #3D2A24; /* Dark Brown */
+    border: 1px solid #C9A68D;
+    border-radius: 6px;
+    resize: none;
+    font-family: 'Poppins', sans-serif;
+}
+
+.comments-section textarea::placeholder {
+    color: #6B4F4D; /* Muted brown for placeholder */
+}
+
+.comments-section button {
+    align-self: flex-start;
+    background-color: #B85C38; /* Burnt Orange */
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.comments-section button:hover {
+    background-color: #CE2930; /* Red/Burnt Red */
+}
+
+/* Comments Display */
+#comments-display p {
+    color: #3D2A24; /* Dark Brown for readability */
+    font-size: 0.9em;
+    margin: 0;
+    padding: 5px 0;
+    border-bottom: 1px solid #C9A68D;
+}

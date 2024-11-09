@@ -1,0 +1,22 @@
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+
+# Local development files
+tasks.json
+
+# System files
+.DS_Store
+
+# Log files
+npm-debug.log
+yarn-error.log
+*.log
+
+# OS files (macOS)
+.DS_Store
+
+# VSCode settings (optional)
+.vscode/
