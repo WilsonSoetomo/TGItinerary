@@ -1,22 +1,24 @@
-require('dotenv').config(); // Load environment variables from .env file
+require("dotenv").config(); // Load environment variables from .env file
 
 const express = require("express");
-const { v4: uuidv4 } = require("uuid");
+const http = require("http"); // Use http to create server
 const mongoose = require("mongoose");
-const dotenv = require("dotenv");
 const path = require("path");
+const socketIo = require("socket.io"); // Import socket.io
 
-dotenv.config();
 const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public"))); // Ensure "public" directory for static files
 
 // MongoDB connection
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => console.log("Connected to MongoDB Atlas"))
   .catch((error) => console.error("MongoDB connection error:", error));
 
@@ -25,7 +27,7 @@ const taskSchema = new mongoose.Schema({
   date: String,
   name: String,
   checked: { type: Boolean, default: false },
-  comments: [{ text: String, date: { type: Date, default: Date.now } }]
+  comments: [{ text: String, date: { type: Date, default: Date.now } }],
 });
 
 const Task = mongoose.model("Task", taskSchema);
@@ -50,6 +52,7 @@ app.post("/api/tasks", async (req, res) => {
   try {
     const newTask = new Task({ date, name });
     await newTask.save();
+    io.emit("taskAdded", newTask); // Emit real-time update
     res.json(newTask);
   } catch (error) {
     res.status(500).json({ message: "Error saving task", error });
@@ -68,6 +71,7 @@ app.post("/api/tasks/checkmark", async (req, res) => {
     if (!task) {
       return res.status(404).send("Task not found.");
     }
+    io.emit("taskUpdated", task); // Emit real-time update
     res.sendStatus(200);
   } catch (error) {
     res.status(500).json({ message: "Error updating task", error });
@@ -90,6 +94,7 @@ app.post("/api/tasks/comment", async (req, res) => {
     if (!task) {
       return res.status(404).send("Task not found.");
     }
+    io.emit("commentAdded", task); // Emit real-time update
     res.sendStatus(200);
   } catch (error) {
     res.status(500).json({ message: "Error adding comment", error });
@@ -108,11 +113,18 @@ app.delete("/api/tasks", async (req, res) => {
     if (!task) {
       return res.status(404).send("Task not found.");
     }
+    io.emit("taskDeleted", { id }); // Emit real-time update
     res.sendStatus(200);
   } catch (error) {
     res.status(500).json({ message: "Error deleting task", error });
   }
 });
 
+// Handle client connections and disconnections
+io.on("connection", (socket) => {
+  console.log("New client connected");
+  socket.on("disconnect", () => console.log("Client disconnected"));
+});
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
