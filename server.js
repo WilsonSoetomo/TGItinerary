@@ -1,121 +1,116 @@
 const express = require("express");
-const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
 const path = require("path");
+
+dotenv.config();
 const app = express();
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public"))); // Ensure "public" directory for static files
 
-// Load and save data from JSON file
-const loadData = () => {
-    if (!fs.existsSync("tasks.json")) {
-        fs.writeFileSync("tasks.json", JSON.stringify({}), "utf8");
-    }
-    return JSON.parse(fs.readFileSync("tasks.json", "utf8"));
-};
+// MongoDB connection
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+  .then(() => console.log("Connected to MongoDB Atlas"))
+  .catch((error) => console.error("MongoDB connection error:", error));
 
-const saveData = (data) => fs.writeFileSync("tasks.json", JSON.stringify(data, null, 2), "utf8");
+// Define Task schema and model
+const taskSchema = new mongoose.Schema({
+  date: String,
+  name: String,
+  checked: { type: Boolean, default: false },
+  comments: [{ text: String, date: { type: Date, default: Date.now } }]
+});
+
+const Task = mongoose.model("Task", taskSchema);
 
 // GET all tasks
-app.get("/api/tasks", (req, res) => {
-    const data = loadData();
-    res.json(data);
+app.get("/api/tasks", async (req, res) => {
+  try {
+    const tasks = await Task.find();
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching tasks", error });
+  }
 });
 
 // POST to add a new task
-app.post("/api/tasks", (req, res) => {
-    const { date, name } = req.body;
-    if (!date || !name) {
-        return res.status(400).send("Date and task name are required.");
-    }
+app.post("/api/tasks", async (req, res) => {
+  const { date, name } = req.body;
+  if (!date || !name) {
+    return res.status(400).send("Date and task name are required.");
+  }
 
-    const data = loadData();
-    const newTask = { id: uuidv4(), name, checked: false, comments: [] };
-
-    if (!data[date]) {
-        data[date] = [];
-    }
-
-    data[date].push(newTask);
-    saveData(data);
+  try {
+    const newTask = new Task({ date, name });
+    await newTask.save();
     res.json(newTask);
+  } catch (error) {
+    res.status(500).json({ message: "Error saving task", error });
+  }
 });
 
 // POST to update checkmark state
-app.post("/api/tasks/checkmark", (req, res) => {
-    const { date, id, checked } = req.body;
-    if (!date || !id || typeof checked !== "boolean") {
-        return res.status(400).send("Date, task ID, and checked state are required.");
-    }
+app.post("/api/tasks/checkmark", async (req, res) => {
+  const { id, checked } = req.body;
+  if (!id || typeof checked !== "boolean") {
+    return res.status(400).send("Task ID and checked state are required.");
+  }
 
-    const data = loadData();
-    const dayTasks = data[date];
-    if (!dayTasks) {
-        return res.status(404).send("Day not found.");
-    }
-
-    const task = dayTasks.find(task => task.id === id);
+  try {
+    const task = await Task.findByIdAndUpdate(id, { checked }, { new: true });
     if (!task) {
-        return res.status(404).send("Task not found.");
+      return res.status(404).send("Task not found.");
     }
-
-    task.checked = checked;
-    saveData(data);
     res.sendStatus(200);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating task", error });
+  }
 });
 
 // POST to add a comment to a task
-app.post("/api/tasks/comment", (req, res) => {
-    const { date, id, comment } = req.body;
-    if (!date || !id || !comment) {
-        return res.status(400).send("Date, task ID, and comment are required.");
-    }
+app.post("/api/tasks/comment", async (req, res) => {
+  const { id, comment } = req.body;
+  if (!id || !comment) {
+    return res.status(400).send("Task ID and comment are required.");
+  }
 
-    const data = loadData();
-    const dayTasks = data[date];
-    if (!dayTasks) {
-        return res.status(404).send("Day not found.");
-    }
-
-    const task = dayTasks.find(task => task.id === id);
+  try {
+    const task = await Task.findByIdAndUpdate(
+      id,
+      { $push: { comments: { text: comment } } },
+      { new: true }
+    );
     if (!task) {
-        return res.status(404).send("Task not found.");
+      return res.status(404).send("Task not found.");
     }
-
-    task.comments.push(comment);
-    saveData(data);
     res.sendStatus(200);
+  } catch (error) {
+    res.status(500).json({ message: "Error adding comment", error });
+  }
 });
 
 // DELETE a task
-app.delete("/api/tasks", (req, res) => {
-    const { date, id } = req.body;
-    if (!date || !id) {
-        return res.status(400).send("Date and task ID are required.");
+app.delete("/api/tasks", async (req, res) => {
+  const { id } = req.body;
+  if (!id) {
+    return res.status(400).send("Task ID is required.");
+  }
+
+  try {
+    const task = await Task.findByIdAndDelete(id);
+    if (!task) {
+      return res.status(404).send("Task not found.");
     }
-
-    const data = loadData();
-    const dayTasks = data[date];
-    if (!dayTasks) {
-        return res.status(404).send("Day not found.");
-    }
-
-    const taskIndex = dayTasks.findIndex(task => task.id === id);
-    if (taskIndex === -1) {
-        return res.status(404).send("Task not found.");
-    }
-
-    dayTasks.splice(taskIndex, 1);
-
-    if (dayTasks.length === 0) {
-        delete data[date];
-    }
-
-    saveData(data);
     res.sendStatus(200);
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting task", error });
+  }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
